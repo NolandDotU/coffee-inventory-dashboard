@@ -3,29 +3,35 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { doc, getDocs } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore'; // 👈 should be getDoc, not getDocs
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
     try {
-      const usernameDoc = await getDocs(doc(db, 'usernames', username));
-      if (!usernameDoc.exists()) {
+      // 👇 Fetch the email from the username document
+      const usernameDocRef = doc(db, 'usernames', username);
+      const usernameDocSnap = await getDoc(usernameDocRef);
+
+      if (!usernameDocSnap.exists()) {
         setError('Username does not exist');
         return;
       }
 
-      const { email } = usernameDoc.data();
+      const email = usernameDocSnap.data().email;
+
+      // 👇 Sign in using the retrieved email
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Login failed');
     }
   };
 
@@ -36,8 +42,8 @@ export default function LoginPage() {
         <input
           type="text"
           placeholder="Username"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+          value={username}
+          onChange={e => setUsername(e.target.value)}
           className="border p-2"
         />
         <input

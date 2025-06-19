@@ -16,8 +16,8 @@ export default function HomePage() {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl">Welcome, {user?.email}</h1>
+    <main className="p-4 bg-gray-600 min-h-screen flex flex-col items-center justify-center">
+      
     </main>
   );
 }
